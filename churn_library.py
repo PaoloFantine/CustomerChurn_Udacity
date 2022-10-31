@@ -3,7 +3,7 @@ class to process and model customer churn data within udacity MLengineer
 course
 '''
 
-# import libraries
+import logging
 import os
 
 import joblib
@@ -19,6 +19,12 @@ from sklearn.model_selection import GridSearchCV, train_test_split
 
 os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
+logging.basicConfig(
+    filename='./logs/churn_library.log',
+    level=logging.INFO,
+    filemode='w',
+    format='%(name)s - %(levelname)s - %(message)s')
+
 
 class ChurnPipeline:
     '''
@@ -27,34 +33,52 @@ class ChurnPipeline:
 
     '''
 
-    def __init__(self, pth, config, split):
-        self.df = self.import_data(pth)
+    def __init__(self, pth, config):
 
+        logging.info("importing data")
+        self.df = pd.read_csv(pth)
+        logging.info("SUCCESS: data imported")
+
+        # make target feature
+        logging.info("creating target column")
         self.df[config['target']] = self.df['Attrition_Flag'].apply(
             lambda val: 0 if val == "Existing Customer" else 1)
+        logging.info("SUCCESS: target column created")
+
+        # make & store eda plots
+        plot_dict = {key: getattr(self, value)
+                     for key, value in config['plot_dict'].items()}
+
+        logging.info("starting eda")
+        self._perform_eda(plot_dict)
+        logging.info("SUCCESS: eda completed")
 
         # encode columns
+        logging.info("starting feature encoding")
         self.df = self._encoder_helper(config["cat_columns"], config["target"])
+        logging.info("SUCCESS: features encoded")
 
         # features/target split
         self.y = self.df[config["target"]]
         self.X = pd.DataFrame()
 
-        self.X_train, self.X_test, self.y_train, self.y_test = self.perform_feature_engineering(
-            config, split)
+        logging.info("starting feature engineering")
+        self.X_train, self.X_test, self.y_train, self.y_test = self._perform_feature_engineering(
+            config, config['split'])
+        logging.info("SUCCESS: feature engineering completed")
 
-    def import_data(self, pth):
-        """
-        returns dataframe for the csv found at pth
+        # train models
+        logging.info("training models started")
+        self.lrc, self.rfc = self._train_models(config['param_grid'])
+        logging.info("SUCCESS: models trained")
 
-        input:
-            pth: a path to the csv
-        output:
-            df: pandas dataframe
-        """
-        return pd.read_csv(pth)
+        # store models
+        logging.info("storing models")
+        joblib.dump(self.rfc, "./models/rfc_model.pkl")
+        joblib.dump(self.lrc, "./models/logistic_model.pkl")
+        logging.info("SUCESS: models stored correctly")
 
-    def histogram(self, feature):
+    def _histogram(self, feature):
         """
         plot histogram of the desired feature
         """
@@ -62,7 +86,7 @@ class ChurnPipeline:
         self.df[feature].hist()
         plt.savefig(f"images/eda/{feature}_histogram.pdf")
 
-    def value_counts(self, feature):
+    def _value_counts(self, feature):
         '''
         plot value counts for (categorical) feature
 
@@ -71,7 +95,7 @@ class ChurnPipeline:
         self.df[feature].value_counts("normalize").plot(kind="bar")
         plt.savefig(f"images/eda/{feature}_val_counts.pdf")
 
-    def distribution(self, feature):
+    def _distribution(self, feature):
         '''
         plot feature distribution together with continuous probability distribution
         '''
@@ -104,7 +128,7 @@ class ChurnPipeline:
 
         self._corr_heatmap()
 
-    def perform_eda(self, plot_dict):
+    def _perform_eda(self, plot_dict):
         """
         perform eda and save plots to images/eda folder
 
@@ -147,7 +171,7 @@ class ChurnPipeline:
 
         return self.df
 
-    def perform_feature_engineering(self, config, split):
+    def _perform_feature_engineering(self, config, split):
         """
         input:
             config: dict containing keys 'cat_columns':(list of str) holding the names
@@ -187,6 +211,8 @@ class ChurnPipeline:
         y_train_preds_lr = self.lrc.predict(self.X_train)
         y_test_preds_lr = self.lrc.predict(self.X_test)
 
+        logging.info("storing random forest results")
+
         with open("images/results/random_forest_results.txt", "w") as rf_result_file:
             rf_result_file.write("random forest results \n")
             rf_result_file.write("test results \n")
@@ -198,7 +224,10 @@ class ChurnPipeline:
                 classification_report(
                     self.y_train,
                     y_train_preds_rf))
+        logging.info("SUCCESS: random forest results stored")
 
+        logging.info(
+            "storing logistic regression results")
         with open("images/results/logistic_regression_results.txt", "w") as lr_result_file:
             lr_result_file.write("logistic regression results \n")
             lr_result_file.write("test results \n")
@@ -210,15 +239,17 @@ class ChurnPipeline:
                 classification_report(
                     self.y_train,
                     y_train_preds_lr))
+        logging.info("SUCCESS: logistic regression results stored")
 
-    def train_models(self, param_grid):
+    def _train_models(self, param_grid):
         """
         train, store model results: images + scores, and store models
 
         param_grid: dict giving a grid for gridsearch
 
         output:
-              None
+              lrc: logistic regression classifier model
+              rfc: best random forest classifier model
         """
         # grid search
         rfc = RandomForestClassifier(random_state=42)
@@ -233,12 +264,7 @@ class ChurnPipeline:
 
         lrc.fit(self.X_train, self.y_train)
 
-        self.lrc = lrc
-        self.rfc = cv_rfc.best_estimator_
-
-        # store models
-        joblib.dump(self.rfc, "./models/rfc_model.pkl")
-        joblib.dump(self.lrc, "./models/logistic_model.pkl")
+        return lrc, cv_rfc.best_estimator_
 
     def plot_roc_curves(self):
         """
@@ -256,7 +282,9 @@ class ChurnPipeline:
             alpha=0.8)
         plot_roc_curve(self.lrc, self.X_test, self.y_test, ax=ax, alpha=0.8)
 
+        logging.info("storing ROC curves")
         plt.savefig("images/results/ROC_curves.png")
+        logging.info("SUCCESS: ROC curves stored")
 
     def feature_importance_plot(self):
         """
@@ -271,11 +299,13 @@ class ChurnPipeline:
         """
 
         # Shap importances
+        logging.info("computing SHAP importance plot")
         explainer = shap.TreeExplainer(self.rfc)
         shap_values = explainer.shap_values(self.X_test)
         shap.summary_plot(shap_values, self.X_test, plot_type="bar")
+        logging.info("SUCCESS: SHAP importance plot generated")
 
-        # Calculate feature importances
+        logging.info("calculating feature importance")
         importances = self.rfc.feature_importances_
 
         # Sort feature importances in descending order
@@ -296,3 +326,5 @@ class ChurnPipeline:
 
         # Add feature names as x-axis labels
         plt.xticks(range(self.X.shape[1]), names, rotation=90)
+        plt.savefig("images/results/feature_importance.png")
+        logging.info("SUCCESS: feature importances calculated")

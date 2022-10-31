@@ -1,6 +1,6 @@
 import os
 import logging
-import churn_library as cls
+from churn_library import ChurnPipeline
 import pandas as pd
 import yaml
 
@@ -10,25 +10,21 @@ logging.basicConfig(
     filemode='w',
     format='%(name)s - %(levelname)s - %(message)s')
 
-def test_import():
-    '''
-    test data import - this example is completed for you to assist with the other test functions
-    '''
-    try:
-        df = cls.import_data("./data/bank_data.csv")
-        logging.info("Testing import_data: SUCCESS")
-    except FileNotFoundError as err:
-        logging.error("Testing import_eda: The file wasn't found")
-        raise err
+with open("test_config.yaml", "r") as stream:
+    config = yaml.safe_load(stream)
 
-    try:
-        assert df.shape[0] > 0
-        assert df.shape[1] > 0
-    except AssertionError as err:
-        logging.error("Testing import_data: The file doesn't appear to have rows and columns")
-        raise err
+cpl = ChurnPipeline("./data/bank_data.csv", config)
 
 
+# test target column
+# test eda stores right plot
+# test encoder helper
+# test feature engineering
+# test model training
+# test model storage
+# test classification report images
+# test roc storage
+# test feature importances
 def test_eda():
     '''
     test perform_eda class
@@ -126,7 +122,6 @@ def test_train_models(train_models):
 
 
 if __name__ == "__main__":
-    test_import()
     test_eda()
     test_encoder_helper()
 

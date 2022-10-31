@@ -1,10 +1,24 @@
-root - INFO - Testing import_data: SUCCESS
-root - INFO - SUCCESS: perform_eda.shape type check
-root - INFO - SUCCESS: perform_eda.shape shape check
-root - INFO - SUCCESS: perform_eda.check_nulls type check
-root - INFO - SUCCESS: perform_eda.check_nulls column number check
-root - INFO - SUCCESS: perform_eda.describe row number check
-root - INFO - SUCCESS: perform_eda.describe row number check
-root - INFO - SUCCESS: perform_eda.describe: column names
-root - INFO - SUCCESS: encoded column names created by function encoder_helper
-root - INFO - SUCCESS: encoder helper created the correct amount of values
+root - INFO - importing data
+root - INFO - SUCCESS: data imported
+root - INFO - creating target column
+root - INFO - SUCCESS: target column created
+root - INFO - starting eda
+root - INFO - SUCCESS: eda completed
+root - INFO - starting feature encoding
+root - INFO - SUCCESS: features encoded
+root - INFO - starting feature engineering
+root - INFO - SUCCESS: feature engineering completed
+root - INFO - training models started
+root - INFO - SUCCESS: models trained
+root - INFO - storing models
+root - INFO - SUCESS: models stored correctly
+root - INFO - storing ROC curves
+root - INFO - SUCCESS: ROC curves stored
+root - INFO - storing random forest results
+root - INFO - SUCCESS: random forest results stored
+root - INFO - storing logistic regression results
+root - INFO - SUCCESS: logistic regression results stored
+root - INFO - computing SHAP importance plot
+root - INFO - SUCCESS: SHAP importance plot generated
+root - INFO - calculating feature importance
+root - INFO - SUCCESS: feature importances calculated
