@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "customer_churn"
+version = "0.1.0"
+description = "Package to model customer churn"
+authors = ["Udacity - Paolo"]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+joblib = "0.11"
+scikit-learn = "0.22"
+shap = "0.40.0"
+pandas = "0.23.3"
+numpy = "1.19.5"
+matplotlib = "2.2.0"
+seaborn = "0.11.2"
+pylint = "2.7.4"
+PyYAML = "3.12"
+autopep8 = "1.5.6"
+scikit-plot = "^0.3.7"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

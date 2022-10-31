@@ -1,0 +1,24 @@
+random forest resultstest results             precision    recall  f1-score   support
+
+          0       0.96      0.99      0.98      2543
+          1       0.94      0.80      0.87       496
+
+avg / total       0.96      0.96      0.96      3039
+train results             precision    recall  f1-score   support
+
+          0       1.00      1.00      1.00      5957
+          1       1.00      1.00      1.00      1131
+
+avg / total       1.00      1.00      1.00      7088
+logistic regression resultstest results             precision    recall  f1-score   support
+
+          0       0.90      0.97      0.93      2543
+          1       0.72      0.44      0.54       496
+
+avg / total       0.87      0.88      0.87      3039
+train results             precision    recall  f1-score   support
+
+          0       0.91      0.96      0.94      5957
+          1       0.73      0.50      0.59      1131
+
+avg / total       0.88      0.89      0.88      7088
