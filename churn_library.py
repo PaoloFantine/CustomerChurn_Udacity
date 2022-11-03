@@ -1,7 +1,7 @@
-'''
+"""
 class to process and model customer churn data within udacity MLengineer
 course
-'''
+"""
 
 import logging
 import os
@@ -20,18 +20,19 @@ from sklearn.model_selection import GridSearchCV, train_test_split
 os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
 logging.basicConfig(
-    filename='./logs/churn_library.log',
+    filename="./logs/churn_library.log",
     level=logging.INFO,
-    filemode='w',
-    format='%(name)s - %(levelname)s - %(message)s')
+    filemode="w",
+    format="%(name)s - %(levelname)s - %(message)s",
+)
 
 
 class ChurnPipeline:
-    '''
+    """
     Class to process data, model customer churn and store relevant
     plots and results
 
-    '''
+    """
 
     def __init__(self, pth, config):
 
@@ -41,13 +42,15 @@ class ChurnPipeline:
 
         # make target feature
         logging.info("creating target column")
-        self.df[config['target']] = self.df['Attrition_Flag'].apply(
-            lambda val: 0 if val == "Existing Customer" else 1)
+        self.df[config["target"]] = self.df["Attrition_Flag"].apply(
+            lambda val: 0 if val == "Existing Customer" else 1
+        )
         logging.info("SUCCESS: target column created")
 
         # make & store eda plots
-        plot_dict = {key: getattr(self, value)
-                     for key, value in config['plot_dict'].items()}
+        plot_dict = {
+            key: getattr(self, value) for key, value in config["plot_dict"].items()
+        }
 
         logging.info("starting eda")
         self._perform_eda(plot_dict)
@@ -63,20 +66,24 @@ class ChurnPipeline:
         self.X = pd.DataFrame()
 
         logging.info("starting feature engineering")
-        self.X_train, self.X_test, self.y_train, self.y_test = self._perform_feature_engineering(
-            config, config['split'])
+        (
+            self.X_train,
+            self.X_test,
+            self.y_train,
+            self.y_test,
+        ) = self._perform_feature_engineering(config, config["split"])
         logging.info("SUCCESS: feature engineering completed")
 
         # train models
         logging.info("training models started")
-        self.lrc, self.rfc = self._train_models(config['param_grid'])
+        self.lrc, self.rfc = self._train_models(config["param_grid"])
         logging.info("SUCCESS: models trained")
 
         # store models
         logging.info("storing models")
         joblib.dump(self.rfc, "./models/rfc_model.pkl")
         joblib.dump(self.lrc, "./models/logistic_model.pkl")
-        logging.info("SUCESS: models stored correctly")
+        logging.info("SUCCESS: models stored correctly")
 
     def _histogram(self, feature):
         """
@@ -87,27 +94,27 @@ class ChurnPipeline:
         plt.savefig(f"images/eda/{feature}_histogram.pdf")
 
     def _value_counts(self, feature):
-        '''
+        """
         plot value counts for (categorical) feature
 
-        '''
+        """
         plt.figure(figsize=(20, 10))
         self.df[feature].value_counts("normalize").plot(kind="bar")
-        plt.savefig(f"images/eda/{feature}_val_counts.pdf")
+        plt.savefig(f"images/eda/{feature}_value_counts.pdf")
 
     def _distribution(self, feature):
-        '''
+        """
         plot feature distribution together with continuous probability distribution
-        '''
+        """
         plt.figure(figsize=(20, 10))
         sns.histplot(self.df[feature], stat="density", kde=True)
         plt.savefig(f"images/eda/{feature}_distribution.pdf")
 
     def _corr_heatmap(self):
-        '''
+        """
         plot correlation heatmap of features stored in self.df
 
-        '''
+        """
         plt.figure(figsize=(20, 10))
         sns.heatmap(self.df.corr(), annot=False, cmap="Dark2_r", linewidths=2)
         plt.savefig("images/eda/correlation_heatmap.pdf")
@@ -166,8 +173,7 @@ class ChurnPipeline:
 
         for cat in category_lst:
             grouped_cat = dict(self.df.groupby(cat).mean()[target])
-            self.df[cat + "_" + target] = [grouped_cat[label]
-                                           for label in self.df[cat]]
+            self.df[cat + "_" + target] = [grouped_cat[label] for label in self.df[cat]]
 
         return self.df
 
@@ -190,11 +196,7 @@ class ChurnPipeline:
 
         self.X[keep_cols] = self.df[keep_cols]
 
-        return train_test_split(
-            self.X,
-            self.y,
-            test_size=split,
-            random_state=42)
+        return train_test_split(self.X, self.y, test_size=split, random_state=42)
 
     def classification_report_image(self):
         """
@@ -213,7 +215,40 @@ class ChurnPipeline:
 
         logging.info("storing random forest results")
 
-        with open("images/results/random_forest_results.txt", "w") as rf_result_file:
+        plt.rc("figure", figsize=(5, 5))
+        plt.text(
+            0.01,
+            1.25,
+            str("Random Forest Train"),
+            {"fontsize": 10},
+            fontproperties="monospace",
+        )
+        plt.text(
+            0.01,
+            0.05,
+            str(classification_report(self.y_test, y_test_preds_rf)),
+            {"fontsize": 10},
+            fontproperties="monospace",
+        )  # approach improved by OP -> monospace!
+        plt.text(
+            0.01,
+            0.6,
+            str("Random Forest Test"),
+            {"fontsize": 10},
+            fontproperties="monospace",
+        )
+        plt.text(
+            0.01,
+            0.7,
+            str(classification_report(self.y_train, y_train_preds_rf)),
+            {"fontsize": 10},
+            fontproperties="monospace",
+        )  # approach improved by OP -> monospace!
+        plt.axis("off")
+        plt.savefig("./images/results/random_forest_results.png")
+
+        """
+        with open("images/results/random_forest_results.png", "w") as rf_result_file:
             rf_result_file.write("random forest results \n")
             rf_result_file.write("test results \n")
             rf_result_file.write(
@@ -224,11 +259,44 @@ class ChurnPipeline:
                 classification_report(
                     self.y_train,
                     y_train_preds_rf))
+        """
         logging.info("SUCCESS: random forest results stored")
 
-        logging.info(
-            "storing logistic regression results")
-        with open("images/results/logistic_regression_results.txt", "w") as lr_result_file:
+        logging.info("storing logistic regression results")
+        plt.rc("figure", figsize=(5, 5))
+        plt.text(
+            0.01,
+            1.25,
+            str("Logistic Regression Train"),
+            {"fontsize": 10},
+            fontproperties="monospace",
+        )
+        plt.text(
+            0.01,
+            0.05,
+            str(classification_report(self.y_train, y_train_preds_lr)),
+            {"fontsize": 10},
+            fontproperties="monospace",
+        )  # approach improved by OP -> monospace!
+        plt.text(
+            0.01,
+            0.6,
+            str("Logistic Regression Test"),
+            {"fontsize": 10},
+            fontproperties="monospace",
+        )
+        plt.text(
+            0.01,
+            0.7,
+            str(classification_report(self.y_test, y_test_preds_lr)),
+            {"fontsize": 10},
+            fontproperties="monospace",
+        )  # approach improved by OP -> monospace!
+        plt.axis("off")
+        plt.savefig("./images/results/logistic_regression_results.png")
+
+        """
+        with open("images/results/logistic_regression_results.png", "w") as lr_result_file:
             lr_result_file.write("logistic regression results \n")
             lr_result_file.write("test results \n")
             lr_result_file.write(
@@ -239,6 +307,7 @@ class ChurnPipeline:
                 classification_report(
                     self.y_train,
                     y_train_preds_lr))
+        """
         logging.info("SUCCESS: logistic regression results stored")
 
     def _train_models(self, param_grid):
@@ -274,12 +343,7 @@ class ChurnPipeline:
 
         plt.figure(figsize=(15, 8))
         ax = plt.gca()
-        plot_roc_curve(
-            self.rfc,
-            self.X_test,
-            self.y_test,
-            ax=ax,
-            alpha=0.8)
+        plot_roc_curve(self.rfc, self.X_test, self.y_test, ax=ax, alpha=0.8)
         plot_roc_curve(self.lrc, self.X_test, self.y_test, ax=ax, alpha=0.8)
 
         logging.info("storing ROC curves")

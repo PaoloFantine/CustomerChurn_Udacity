@@ -41,17 +41,17 @@ plot_dict:
 param_grid:
   n_estimators: 
     - 200
-    #- 500
+    - 500
   max_features: 
     - auto
-    #- sqrt
+    - sqrt
   max_depth: 
     - 4
-    #- 5
-    #- 100
+    - 5
+    - 100
   criterion:
     - gini
-    #- entropy
+    - entropy
 
 # test/train set split (test set will be this fraction of the total)
 split:
