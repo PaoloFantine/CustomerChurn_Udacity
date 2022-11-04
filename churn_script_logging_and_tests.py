@@ -289,6 +289,16 @@ def test_feature_importance_plot_storage(cpl):
         )
         raise err
 
+    try:
+        assert os.path.isfile("./images/results/shap_summary.png")
+        logging.info("feature imprtance plot correctly stored: SUCCESS")
+    except AssertionError as err:
+        logging.error(
+            "shap_summary.png does not seem to be a file in folder images/results"
+        )
+        raise err
+
+
 
 if __name__ == "__main__":
 
