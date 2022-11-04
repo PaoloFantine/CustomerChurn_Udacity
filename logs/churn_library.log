@@ -14,10 +14,10 @@ root - INFO - storing models
 root - INFO - SUCCESS: models stored correctly
 root - INFO - storing ROC curves
 root - INFO - SUCCESS: ROC curves stored
-root - INFO - storing random forest results
-root - INFO - SUCCESS: random forest results stored
-root - INFO - storing logistic regression results
-root - INFO - SUCCESS: logistic regression results stored
+root - INFO - computing SHAP importance plot
+root - INFO - SUCCESS: SHAP importance plot generated
+root - INFO - calculating feature importance
+root - INFO - SUCCESS: feature importances calculated
 root - INFO - storing random forest results
 root - INFO - SUCCESS: random forest results stored
 root - INFO - storing logistic regression results

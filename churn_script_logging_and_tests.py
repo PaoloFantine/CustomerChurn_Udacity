@@ -1,5 +1,8 @@
 """
 test and log ChurnPipeline class
+
+Author: Paolo Fantinel
+Creation Date: 04/11/2022
 """
 import logging
 import math
@@ -73,9 +76,12 @@ def test_eda_plots_stored(config):
     """
     test that eda stores the right plots in the correct folder
     """
-    expected_files = [key + val + ".pdf" for key, val in config["plot_dict"].items()]
+    expected_files = [
+        key + val + ".pdf" for key,
+        val in config["plot_dict"].items()]
     try:
-        assert all((os.path.isfile("./images/eda/" + file) for file in expected_files))
+        assert all((os.path.isfile("./images/eda/" + file)
+                   for file in expected_files))
         logging.info("plots_stored: SUCCESS")
     except AssertionError as err:
         logging.error(
@@ -106,10 +112,10 @@ def test_encoder_helper(cpl, config):
             col + "_" + config["target"]: cpl.df[col].nunique()
             for col in config["cat_columns"]
         }
-        assert all(
-            (actual_n_val[col] == expected_n_val[col] for col in actual_n_val.keys())
-        )
-        logging.info("encoded columns have the correct amount of values: SUCCESS")
+        assert all((actual_n_val[col] == expected_n_val[col]
+                    for col in actual_n_val.keys()))
+        logging.info(
+            "encoded columns have the correct amount of values: SUCCESS")
     except AssertionError as err:
         logging.error(
             f"encoded columns have wrong amount of values: expected {expected_n_val}, got {actual_n_val}"
@@ -147,19 +153,20 @@ def test_feature_engineering(cpl, config):
     test that feature_engineering returns the correct dataframes, with the correct splits and columns
     """
     try:  # check test/train split is done correctly
-        assert math.isclose(
-            config["split"], len(cpl.X_test.index) / len(cpl.df.index), abs_tol=0.01
-        )
+        assert math.isclose(config["split"], len(
+            cpl.X_test.index) / len(cpl.df.index), abs_tol=0.01)
         assert math.isclose(
             (1 - config["split"]),
             len(cpl.X_train.index) / len(cpl.df.index),
             abs_tol=0.01,
         )
-        assert math.isclose(config["split"], len(cpl.y_test) / len(cpl.y), abs_tol=0.01)
+        assert math.isclose(config["split"], len(
+            cpl.y_test) / len(cpl.y), abs_tol=0.01)
         assert math.isclose(
             (1 - config["split"]), len(cpl.y_train) / len(cpl.y), abs_tol=0.01
         )
-        logging.info("train/test split performed according to defined split: SUCCESS")
+        logging.info(
+            "train/test split performed according to defined split: SUCCESS")
     except AssertionError as err:
         logging.error(
             f"train/test split not performed correctly; expected {config['split']}, got {len(cpl.X_test.index)/len(cpl.df.index)} for features and {len(cpl.y_test)/len(cpl.y)}"
@@ -235,7 +242,8 @@ def test_classification_report_storage(cpl):
     cpl.classification_report_image()
 
     try:
-        assert os.path.isfile("./images/results/logistic_regression_results.png")
+        assert os.path.isfile(
+            "./images/results/logistic_regression_results.png")
         logging.info("logistic regression results stored: SUCCESS")
     except AssertionError as err:
         logging.error(
@@ -247,7 +255,8 @@ def test_classification_report_storage(cpl):
         assert os.path.isfile("./images/results/random_forest_results.png")
         logging.info("random forest results stored: SUCCESS")
     except AssertionError as err:
-        logging.error("random_forest_results.png not found in folder images/results")
+        logging.error(
+            "random_forest_results.png not found in folder images/results")
         raise err
 
 
@@ -260,7 +269,8 @@ def test_roc_curves_storage(cpl):
         assert os.path.isfile("./images/results/ROC_curves.png")
         logging.info("ROC curves stored correctly: SUCCESS")
     except AssertionError as err:
-        logging.error("ROC_curves.png does not seem to be in folder images/results")
+        logging.error(
+            "ROC_curves.png does not seem to be in folder images/results")
         raise err
 
 
@@ -295,7 +305,6 @@ if __name__ == "__main__":
     test_feature_engineering(CPL, CONFIG)
     test_model_training(CPL, CONFIG)
     test_model_storage()
-    test_classification_report_storage(CPL)
     test_classification_report_storage(CPL)
     test_roc_curves_storage(CPL)
     test_feature_importance_plot_storage(CPL)

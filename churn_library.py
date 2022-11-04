@@ -1,6 +1,9 @@
 """
 class to process and model customer churn data within udacity MLengineer
 course
+
+Author: Paolo Fantinel
+Creation Date: 04/11/2022
 """
 
 import logging
@@ -48,9 +51,8 @@ class ChurnPipeline:
         logging.info("SUCCESS: target column created")
 
         # make & store eda plots
-        plot_dict = {
-            key: getattr(self, value) for key, value in config["plot_dict"].items()
-        }
+        plot_dict = {key: getattr(self, value)
+                     for key, value in config["plot_dict"].items()}
 
         logging.info("starting eda")
         self._perform_eda(plot_dict)
@@ -89,35 +91,39 @@ class ChurnPipeline:
         """
         plot histogram of the desired feature
         """
-        plt.figure(figsize=(20, 10))
+        fig = plt.figure(figsize=(20, 10))
         self.df[feature].hist()
         plt.savefig(f"images/eda/{feature}_histogram.pdf")
+        plt.close(fig)
 
     def _value_counts(self, feature):
         """
         plot value counts for (categorical) feature
 
         """
-        plt.figure(figsize=(20, 10))
+        fig = plt.figure(figsize=(20, 10))
         self.df[feature].value_counts("normalize").plot(kind="bar")
         plt.savefig(f"images/eda/{feature}_value_counts.pdf")
+        plt.close(fig)
 
     def _distribution(self, feature):
         """
         plot feature distribution together with continuous probability distribution
         """
-        plt.figure(figsize=(20, 10))
+        fig = plt.figure(figsize=(20, 10))
         sns.histplot(self.df[feature], stat="density", kde=True)
         plt.savefig(f"images/eda/{feature}_distribution.pdf")
+        plt.close(fig)
 
     def _corr_heatmap(self):
         """
         plot correlation heatmap of features stored in self.df
 
         """
-        plt.figure(figsize=(20, 10))
+        fig = plt.figure(figsize=(20, 10))
         sns.heatmap(self.df.corr(), annot=False, cmap="Dark2_r", linewidths=2)
         plt.savefig("images/eda/correlation_heatmap.pdf")
+        plt.close(fig)
 
     def _plot_eda(self, plot_dict):
         """
@@ -173,7 +179,8 @@ class ChurnPipeline:
 
         for cat in category_lst:
             grouped_cat = dict(self.df.groupby(cat).mean()[target])
-            self.df[cat + "_" + target] = [grouped_cat[label] for label in self.df[cat]]
+            self.df[cat + "_" + target] = [grouped_cat[label]
+                                           for label in self.df[cat]]
 
         return self.df
 
@@ -196,7 +203,11 @@ class ChurnPipeline:
 
         self.X[keep_cols] = self.df[keep_cols]
 
-        return train_test_split(self.X, self.y, test_size=split, random_state=42)
+        return train_test_split(
+            self.X,
+            self.y,
+            test_size=split,
+            random_state=42)
 
     def classification_report_image(self):
         """
@@ -215,10 +226,11 @@ class ChurnPipeline:
 
         logging.info("storing random forest results")
 
-        plt.rc("figure", figsize=(5, 5))
+        # plt.rc("figure", figsize=(7, 5))
+        fig = plt.figure(figsize=(7, 5))
         plt.text(
             0.01,
-            1.25,
+            0.01,
             str("Random Forest Train"),
             {"fontsize": 10},
             fontproperties="monospace",
@@ -246,27 +258,15 @@ class ChurnPipeline:
         )  # approach improved by OP -> monospace!
         plt.axis("off")
         plt.savefig("./images/results/random_forest_results.png")
-
-        """
-        with open("images/results/random_forest_results.png", "w") as rf_result_file:
-            rf_result_file.write("random forest results \n")
-            rf_result_file.write("test results \n")
-            rf_result_file.write(
-                classification_report(
-                    self.y_test, y_test_preds_rf))
-            rf_result_file.write("train results \n")
-            rf_result_file.write(
-                classification_report(
-                    self.y_train,
-                    y_train_preds_rf))
-        """
+        plt.close(fig)
         logging.info("SUCCESS: random forest results stored")
 
         logging.info("storing logistic regression results")
-        plt.rc("figure", figsize=(5, 5))
+        # plt.rc("figure", figsize=(7, 5))
+        fig = plt.figure(figsize=(7, 5))
         plt.text(
             0.01,
-            1.25,
+            0.01,
             str("Logistic Regression Train"),
             {"fontsize": 10},
             fontproperties="monospace",
@@ -294,20 +294,7 @@ class ChurnPipeline:
         )  # approach improved by OP -> monospace!
         plt.axis("off")
         plt.savefig("./images/results/logistic_regression_results.png")
-
-        """
-        with open("images/results/logistic_regression_results.png", "w") as lr_result_file:
-            lr_result_file.write("logistic regression results \n")
-            lr_result_file.write("test results \n")
-            lr_result_file.write(
-                classification_report(
-                    self.y_test, y_test_preds_lr))
-            lr_result_file.write("train results \n")
-            lr_result_file.write(
-                classification_report(
-                    self.y_train,
-                    y_train_preds_lr))
-        """
+        plt.close(fig)
         logging.info("SUCCESS: logistic regression results stored")
 
     def _train_models(self, param_grid):
@@ -341,13 +328,14 @@ class ChurnPipeline:
 
         """
 
-        plt.figure(figsize=(15, 8))
+        fig = plt.figure(figsize=(15, 8))
         ax = plt.gca()
         plot_roc_curve(self.rfc, self.X_test, self.y_test, ax=ax, alpha=0.8)
         plot_roc_curve(self.lrc, self.X_test, self.y_test, ax=ax, alpha=0.8)
 
         logging.info("storing ROC curves")
         plt.savefig("images/results/ROC_curves.png")
+        plt.close(fig)
         logging.info("SUCCESS: ROC curves stored")
 
     def feature_importance_plot(self):
@@ -366,7 +354,9 @@ class ChurnPipeline:
         logging.info("computing SHAP importance plot")
         explainer = shap.TreeExplainer(self.rfc)
         shap_values = explainer.shap_values(self.X_test)
-        shap.summary_plot(shap_values, self.X_test, plot_type="bar")
+        fig = shap.summary_plot(shap_values, self.X_test, plot_type="bar")
+        plt.savefig("images/results/shap_summary.png")
+        plt.close(fig)
         logging.info("SUCCESS: SHAP importance plot generated")
 
         logging.info("calculating feature importance")
@@ -379,7 +369,7 @@ class ChurnPipeline:
         names = [self.X.columns[i] for i in indices]
 
         # Create plot
-        plt.figure(figsize=(20, 5))
+        fig = plt.figure(figsize=(20, 5))
 
         # Create plot title
         plt.title("Feature Importance")
@@ -391,4 +381,5 @@ class ChurnPipeline:
         # Add feature names as x-axis labels
         plt.xticks(range(self.X.shape[1]), names, rotation=90)
         plt.savefig("images/results/feature_importance.png")
+        plt.close(fig)
         logging.info("SUCCESS: feature importances calculated")
